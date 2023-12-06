@@ -2,13 +2,14 @@
 # docker build . -t pg-debug
 # docker run --cap-add=SYS_PTRACE -p 5433:5432 -d --name debug-pg pg-debug
 # Then exec to it docker exec -ti debug-bg bash
-# sudo su # the password is postgres
+# sudo su
 # gdb -p $pid_of_pg_backend
 
 FROM ubuntu:22.04
-ARG VERSION=15.3
+ARG VERSION=15.5
 
-RUN apt update && apt install wget git make build-essential libreadline8 libreadline-dev zlib1g zlib1g-dev cmake gdb tmux vim sudo -y
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update && apt-mark hold locales && apt install --no-install-recommends -y wget git-all make build-essential libreadline8 libreadline-dev zlib1g zlib1g-dev cmake gdb tmux vim sudo pkg-config libicu-dev clang-format python3-pip python3-dev
 
 # Build and install postgres
 RUN cd /root && wget https://ftp.postgresql.org/pub/source/v${VERSION}/postgresql-${VERSION}.tar.bz2 && \
@@ -22,7 +23,7 @@ ENV PATH="${PATH}:/usr/local/pgsql/bin"
 # Add postgres user
 RUN pass=$(perl -e 'print crypt("postgres", "postgres")' $password) && \
 		useradd -m -p "$pass" "postgres" && \
-		echo 'postgres  ALL=(ALL:ALL) ALL' >> /etc/sudoers
+		echo 'postgres ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Run initdb
 USER postgres
