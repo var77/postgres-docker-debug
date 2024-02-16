@@ -14,9 +14,10 @@ RUN apt update && apt-mark hold locales && apt install --no-install-recommends -
 # Build and install postgres
 RUN cd /root && wget https://ftp.postgresql.org/pub/source/v${VERSION}/postgresql-${VERSION}.tar.bz2 && \
     tar xf postgresql-${VERSION}.tar.bz2 && \
-    rm -rf postgresql-${VERSION}.tar.bz2 && \
-    cd postgresql-${VERSION} && ./configure --enable-debug && \
-    make && make install
+    rm -rf postgresql-${VERSION}.tar.bz2 
+
+RUN cd /root/postgresql-${VERSION} && ./configure --enable-debug --enable-cassert && \
+    make && make install -j
 
 ENV PATH="${PATH}:/usr/local/pgsql/bin"
 
